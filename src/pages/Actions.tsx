@@ -9,7 +9,7 @@ import MorningMeetingView from "@/components/actions/MorningMeetingView";
 import ActionForm from "@/components/actions/ActionForm";
 
 export default function Actions() {
-  const { actions, isMorningView, toggleMorningView, addAction, updateAction } = useOpinionStore();
+  const { actions, isMorningView, toggleMorningView, addAction, updateAction, addActionUpdate } = useOpinionStore();
   const [formOpen, setFormOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<ActionRecord | null>(null);
 
@@ -32,6 +32,18 @@ export default function Actions() {
     setEditingAction(null);
   };
 
+  const handleAddUpdate = (actionId: string, content: string, operator: string) => {
+    const now = new Date();
+    const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+    addActionUpdate(actionId, {
+      id: `up-${Date.now()}`,
+      time: timeStr,
+      operator,
+      content,
+    });
+  };
+
   const handleSubmit = (
     data: Omit<ActionRecord, "id" | "createdAt" | "updates" | "relatedOpinionIds">
   ) => {
@@ -49,8 +61,8 @@ export default function Actions() {
         ...data,
       };
       addAction(newAction);
+      handleCloseForm();
     }
-    handleCloseForm();
   };
 
   return (
@@ -133,6 +145,7 @@ export default function Actions() {
         onClose={handleCloseForm}
         initialData={editingAction}
         onSubmit={handleSubmit}
+        onAddUpdate={handleAddUpdate}
       />
     </div>
   );

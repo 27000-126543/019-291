@@ -15,6 +15,46 @@ import {
   initialActions,
 } from '@/data';
 
+const STORAGE_KEYS = {
+  BRAND_CONFIG: 'opinion_dashboard:brandConfig',
+  ACTIONS: 'opinion_dashboard:actions',
+} as const;
+
+function safeGetStorage<T>(key: string, defaultValue: T): T {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return defaultValue;
+    }
+    const raw = window.localStorage.getItem(key);
+    if (raw === null) {
+      return defaultValue;
+    }
+    return JSON.parse(raw) as T;
+  } catch {
+    return defaultValue;
+  }
+}
+
+function safeSetStorage<T>(key: string, value: T): void {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore
+  }
+}
+
+const persistedBrandConfig = safeGetStorage<BrandConfig>(
+  STORAGE_KEYS.BRAND_CONFIG,
+  initialBrandConfig
+);
+const persistedActions = safeGetStorage<ActionRecord[]>(
+  STORAGE_KEYS.ACTIONS,
+  initialActions
+);
+
 interface OpinionState {
   brandConfig: BrandConfig;
   opinions: OpinionItem[];
@@ -36,39 +76,49 @@ interface OpinionActions {
 export type OpinionStore = OpinionState & OpinionActions;
 
 export const useOpinionStore = create<OpinionStore>((set) => ({
-  brandConfig: initialBrandConfig,
+  brandConfig: persistedBrandConfig,
   opinions: initialOpinions,
   timelineNodes: initialTimelineNodes,
   sentimentTrend: initialSentimentTrend,
-  actions: initialActions,
+  actions: persistedActions,
   isMorningView: false,
 
   setBrandConfig: (config) =>
-    set((state) => ({
-      brandConfig: { ...state.brandConfig, ...config },
-    })),
+    set((state) => {
+      const newBrandConfig = { ...state.brandConfig, ...config };
+      safeSetStorage(STORAGE_KEYS.BRAND_CONFIG, newBrandConfig);
+      return { brandConfig: newBrandConfig };
+    }),
 
   addOpinion: (opinion) =>
     set((state) => ({ opinions: [opinion, ...state.opinions] })),
 
   addAction: (action) =>
-    set((state) => ({ actions: [action, ...state.actions] })),
+    set((state) => {
+      const newActions = [action, ...state.actions];
+      safeSetStorage(STORAGE_KEYS.ACTIONS, newActions);
+      return { actions: newActions };
+    }),
 
   updateAction: (actionId, updates) =>
-    set((state) => ({
-      actions: state.actions.map((action) =>
+    set((state) => {
+      const newActions = state.actions.map((action) =>
         action.id === actionId ? { ...action, ...updates } : action
-      ),
-    })),
+      );
+      safeSetStorage(STORAGE_KEYS.ACTIONS, newActions);
+      return { actions: newActions };
+    }),
 
   addActionUpdate: (actionId, update) =>
-    set((state) => ({
-      actions: state.actions.map((action) =>
+    set((state) => {
+      const newActions = state.actions.map((action) =>
         action.id === actionId
           ? { ...action, updates: [...action.updates, update] }
           : action
-      ),
-    })),
+      );
+      safeSetStorage(STORAGE_KEYS.ACTIONS, newActions);
+      return { actions: newActions };
+    }),
 
   toggleMorningView: () =>
     set((state) => ({ isMorningView: !state.isMorningView })),

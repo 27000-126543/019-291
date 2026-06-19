@@ -29,6 +29,16 @@ export interface BrandConfig {
   competitors: string[];
 }
 
+export interface PropagationStep {
+  stepType: 'complaint' | 'kols_forward' | 'media_cite' | 'official' | 'rumor';
+  author: string;
+  authorTitle: string;
+  platform: string;
+  content: string;
+  publishTime: string;
+  heat?: number;
+}
+
 export interface TimelineNode {
   id: string;
   time: string;
@@ -37,6 +47,7 @@ export interface TimelineNode {
   description: string;
   importance: "high" | "medium" | "low";
   opinionIds: string[];
+  propagationChain?: PropagationStep[];
 }
 
 export interface SentimentPoint {

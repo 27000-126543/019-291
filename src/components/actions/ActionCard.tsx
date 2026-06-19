@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Calendar, MessageSquare } from "lucide-react";
+import { Users, Calendar, MessageSquare, Clock, User, ChevronDown, ChevronUp } from "lucide-react";
 import type { ActionRecord } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -48,9 +49,15 @@ const RISK_GLOW: Record<string, string> = {
 };
 
 export default function ActionCard({ action, index = 0, onEdit }: ActionCardProps) {
+  const [expanded, setExpanded] = useState(false);
   const totalUpdates = action.updates.length;
   const latestUpdate = action.updates[action.updates.length - 1];
   const progress = action.status === "done" ? 100 : totalUpdates > 0 ? Math.min(totalUpdates * 25, 75) : 0;
+
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded(!expanded);
+  };
 
   return (
     <motion.div
@@ -132,15 +139,84 @@ export default function ActionCard({ action, index = 0, onEdit }: ActionCardProp
           </div>
         </div>
 
-        {latestUpdate && (
-          <div className="flex items-start gap-2 pt-3 border-t border-navy-700/40">
-            <MessageSquare className="w-3.5 h-3.5 text-navy-200/40 mt-0.5 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-navy-200/70 line-clamp-1">{latestUpdate.content}</p>
-              <p className="text-xs text-navy-200/40 mt-0.5">
-                {latestUpdate.operator} · {latestUpdate.time}
-              </p>
-            </div>
+        {totalUpdates > 0 && (
+          <div className="pt-3 border-t border-navy-700/40">
+            <button
+              onClick={toggleExpand}
+              className="w-full flex items-center justify-between text-left mb-2 hover:text-navy-100 transition-colors"
+            >
+              <div className="flex items-center gap-1.5 text-xs text-navy-200/60">
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>历史更新 ({totalUpdates})</span>
+              </div>
+              {expanded ? (
+                <ChevronUp className="w-4 h-4 text-navy-200/60" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-navy-200/60" />
+              )}
+            </button>
+
+            {expanded ? (
+              <div className="max-h-80 overflow-y-auto space-y-3 pr-1">
+                {action.updates.map((update, idx) => (
+                  <div
+                    key={update.id}
+                    className={cn(
+                      "relative pl-4",
+                      idx < action.updates.length - 1 && "before:absolute before:left-1.5 before:top-5 before:bottom-0 before:w-px before:bg-navy-700/50"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "absolute left-0 top-1.5 w-3 h-3 rounded-full border-2",
+                        idx === action.updates.length - 1
+                          ? "bg-alert-blue border-alert-blue shadow-glow"
+                          : "bg-navy-900 border-navy-600"
+                      )}
+                    />
+                    <div
+                      className={cn(
+                        "rounded-lg p-2.5",
+                        idx === action.updates.length - 1
+                          ? "bg-alert-blue/10 border border-alert-blue/30"
+                          : "bg-navy-800/30 border border-navy-700/30"
+                      )}
+                    >
+                      <div className="flex items-center gap-3 text-xs text-navy-200/50 mb-1">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {update.time}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          {update.operator}
+                        </span>
+                      </div>
+                      <p
+                        className={cn(
+                          "text-sm leading-relaxed",
+                          idx === action.updates.length - 1 ? "text-navy-100" : "text-navy-200/70"
+                        )}
+                      >
+                        {update.content}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              latestUpdate && (
+                <div className="flex items-start gap-2">
+                  <MessageSquare className="w-3.5 h-3.5 text-navy-200/40 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-navy-200/70 line-clamp-1">{latestUpdate.content}</p>
+                    <p className="text-xs text-navy-200/40 mt-0.5">
+                      {latestUpdate.operator} · {latestUpdate.time}
+                    </p>
+                  </div>
+                </div>
+              )
+            )}
           </div>
         )}
       </div>
