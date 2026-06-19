@@ -9,6 +9,7 @@ import PlatformChart from "@/components/dashboard/PlatformChart";
 import RegionHeatmap from "@/components/dashboard/RegionHeatmap";
 import CompetitorCompare from "@/components/dashboard/CompetitorCompare";
 import OpinionCard from "@/components/dashboard/OpinionCard";
+import ReportGenerator from "@/components/dashboard/ReportGenerator";
 
 const CATEGORY_ORDER: Category[] = ["complaint", "media", "rumor", "official"];
 
@@ -132,6 +133,10 @@ export default function Dashboard() {
           );
         })}
       </motion.div>
+
+      <div className="mt-10">
+        <ReportGenerator />
+      </div>
     </div>
   );
 }

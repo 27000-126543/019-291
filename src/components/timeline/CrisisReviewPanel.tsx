@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   ClipboardCheck,
@@ -12,6 +12,7 @@ import {
 import { useOpinionStore } from "@/store/useOpinionStore";
 import { cn } from "@/lib/utils";
 import type { PropagationStep, ActionRecord } from "@/types";
+import EvidenceDetailModal from "./EvidenceDetailModal";
 
 interface PhaseConfig {
   key: string;
@@ -30,9 +31,15 @@ const PHASES: PhaseConfig[] = [
 interface EvidenceItem {
   source: string;
   author: string;
+  authorTitle?: string;
   summary: string;
+  content?: string;
   time: string;
   heat?: number;
+  platform?: string;
+  phase: string;
+  opinionId?: string;
+  relatedOpinionIds?: string[];
 }
 
 interface ActionItem {
@@ -70,15 +77,28 @@ function ActionCard({ action }: { action: ActionItem }) {
   );
 }
 
-function EvidenceCard({ evidence, color }: { evidence: EvidenceItem; color: string }) {
+function EvidenceCard({
+  evidence,
+  color,
+  onClick,
+}: {
+  evidence: EvidenceItem;
+  color: string;
+  onClick: (evidence: EvidenceItem) => void;
+}) {
   return (
     <div
-      className="glass-card p-4 relative overflow-hidden group"
+      onClick={() => onClick(evidence)}
+      className="glass-card p-4 relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg"
       style={{ borderColor: `${color}30` }}
     >
       <div
-        className="absolute -top-px -left-px right-12 h-px"
+        className="absolute -top-px -left-px right-12 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{ background: `linear-gradient(90deg, ${color}80, transparent)` }}
+      />
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{ background: `linear-gradient(135deg, ${color}05 0%, transparent 40%)` }}
       />
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-2">
@@ -109,7 +129,7 @@ function EvidenceCard({ evidence, color }: { evidence: EvidenceItem; color: stri
             <span>{evidence.time}</span>
           </div>
         </div>
-        <p className="text-sm text-navy-200/60 leading-relaxed line-clamp-3">{evidence.summary}</p>
+        <p className="text-sm text-navy-200/60 leading-relaxed line-clamp-3 group-hover:text-navy-200/80 transition-colors duration-300">{evidence.summary}</p>
       </div>
     </div>
   );
@@ -120,11 +140,13 @@ function PhaseSection({
   evidences,
   actions,
   index,
+  onEvidenceClick,
 }: {
   phase: PhaseConfig;
   evidences: EvidenceItem[];
   actions: ActionItem[];
   index: number;
+  onEvidenceClick: (evidence: EvidenceItem) => void;
 }) {
   const Icon = phase.icon;
   const hasContent = evidences.length > 0 || actions.length > 0;
@@ -172,7 +194,7 @@ function PhaseSection({
         {evidences.length > 0 && (
           <div className="space-y-3 mb-4">
             {evidences.map((evidence, i) => (
-              <EvidenceCard key={i} evidence={evidence} color={phase.color} />
+              <EvidenceCard key={i} evidence={evidence} color={phase.color} onClick={onEvidenceClick} />
             ))}
           </div>
         )}
@@ -190,8 +212,17 @@ function PhaseSection({
   );
 }
 
+const PLATFORM_NAME_MAP: Record<string, string> = {
+  news: "新闻网站",
+  video: "视频平台",
+  forum: "论坛社区",
+  social: "社交媒体",
+};
+
 export default function CrisisReviewPanel() {
   const { timelineNodes, opinions, actions } = useOpinionStore();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedEvidence, setSelectedEvidence] = useState<EvidenceItem | null>(null);
 
   const phaseData = useMemo(() => {
     const opinionMap = new Map(opinions.map((o) => [o.id, o]));
@@ -216,6 +247,10 @@ export default function CrisisReviewPanel() {
                   summary: op.summary,
                   time: op.publishTime,
                   heat: op.heat,
+                  phase: phase.key,
+                  opinionId: op.id,
+                  platform: PLATFORM_NAME_MAP[op.platform] ?? op.platform,
+                  relatedOpinionIds: [op.id],
                 });
               }
             });
@@ -225,9 +260,12 @@ export default function CrisisReviewPanel() {
                   evidences.push({
                     source: "传播链",
                     author: step.author,
+                    authorTitle: step.authorTitle,
                     summary: step.content,
                     time: step.publishTime,
                     heat: step.heat,
+                    phase: phase.key,
+                    platform: step.platform,
                   });
                 }
               });
@@ -247,6 +285,10 @@ export default function CrisisReviewPanel() {
                   summary: op.summary,
                   time: op.publishTime,
                   heat: op.heat,
+                  phase: phase.key,
+                  opinionId: op.id,
+                  platform: PLATFORM_NAME_MAP[op.platform] ?? op.platform,
+                  relatedOpinionIds: [op.id],
                 });
               }
             });
@@ -256,9 +298,12 @@ export default function CrisisReviewPanel() {
                   evidences.push({
                     source: "传播链",
                     author: step.author,
+                    authorTitle: step.authorTitle,
                     summary: step.content,
                     time: step.publishTime,
                     heat: step.heat,
+                    phase: phase.key,
+                    platform: step.platform,
                   });
                 }
               });
@@ -273,9 +318,12 @@ export default function CrisisReviewPanel() {
                 evidences.push({
                   source: "传播链",
                   author: step.author,
+                  authorTitle: step.authorTitle,
                   summary: step.content,
                   time: step.publishTime,
                   heat: step.heat,
+                  phase: phase.key,
+                  platform: step.platform,
                 });
               }
             });
@@ -294,6 +342,10 @@ export default function CrisisReviewPanel() {
                   summary: op.summary,
                   time: op.publishTime,
                   heat: op.heat,
+                  phase: phase.key,
+                  opinionId: op.id,
+                  platform: PLATFORM_NAME_MAP[op.platform] ?? op.platform,
+                  relatedOpinionIds: [op.id],
                 });
               }
             }
@@ -321,17 +373,30 @@ export default function CrisisReviewPanel() {
     return phases;
   }, [timelineNodes, opinions, actions]);
 
+  const handleEvidenceClick = (evidence: EvidenceItem) => {
+    setSelectedEvidence(evidence);
+    setModalOpen(true);
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      {phaseData.map((data, index) => (
-        <PhaseSection
-          key={data.phase.key}
-          phase={data.phase}
-          evidences={data.evidences}
-          actions={data.actions}
-          index={index}
-        />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {phaseData.map((data, index) => (
+          <PhaseSection
+            key={data.phase.key}
+            phase={data.phase}
+            evidences={data.evidences}
+            actions={data.actions}
+            index={index}
+            onEvidenceClick={handleEvidenceClick}
+          />
+        ))}
+      </div>
+      <EvidenceDetailModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        evidence={selectedEvidence}
+      />
+    </>
   );
 }

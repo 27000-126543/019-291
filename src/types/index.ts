@@ -89,6 +89,22 @@ export interface AlertRule {
   description: string;
 }
 
+export interface TriggeredAlert {
+  id: string;
+  ruleId: string;
+  ruleName: string;
+  ruleType: AlertRule['type'];
+  triggeredAt: string;
+  currentValue: number;
+  threshold: number;
+  status: 'unhandled' | 'following' | 'resolved';
+  detail: string;
+  involvedPlatforms?: string[];
+  involvedOpinionIds?: string[];
+  handledBy?: string;
+  note?: string;
+}
+
 export interface StatItem {
   title: string;
   value: string | number;

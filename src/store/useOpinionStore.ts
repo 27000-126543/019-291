@@ -7,6 +7,7 @@ import type {
   ActionRecord,
   ActionUpdate,
   AlertRule,
+  TriggeredAlert,
 } from '@/types';
 import {
   initialBrandConfig,
@@ -20,6 +21,7 @@ const STORAGE_KEYS = {
   BRAND_CONFIG: 'opinion_dashboard:brandConfig',
   ACTIONS: 'opinion_dashboard:actions',
   ALERT_RULES: 'opinion_dashboard:alertRules',
+  TRIGGERED_ALERTS: 'opinion_dashboard:triggeredAlerts',
 } as const;
 
 const defaultAlertRules: AlertRule[] = [
@@ -90,6 +92,10 @@ const persistedAlertRules = safeGetStorage<AlertRule[]>(
   STORAGE_KEYS.ALERT_RULES,
   defaultAlertRules
 );
+const persistedTriggeredAlerts = safeGetStorage<TriggeredAlert[]>(
+  STORAGE_KEYS.TRIGGERED_ALERTS,
+  []
+);
 
 interface OpinionState {
   brandConfig: BrandConfig;
@@ -98,7 +104,9 @@ interface OpinionState {
   sentimentTrend: SentimentPoint[];
   actions: ActionRecord[];
   alertRules: AlertRule[];
+  triggeredAlerts: TriggeredAlert[];
   isMorningView: boolean;
+  actionsView: "kanban" | "cross";
 }
 
 interface OpinionActions {
@@ -108,9 +116,13 @@ interface OpinionActions {
   updateAction: (actionId: string, updates: Partial<ActionRecord>) => void;
   addActionUpdate: (actionId: string, update: ActionUpdate) => void;
   toggleMorningView: () => void;
+  setActionsView: (view: "kanban" | "cross") => void;
   setAlertRules: (rules: AlertRule[]) => void;
   toggleAlertRule: (ruleId: string) => void;
   updateAlertRule: (ruleId: string, updates: Partial<AlertRule>) => void;
+  triggerAlert: (alert: Omit<TriggeredAlert, 'id' | 'triggeredAt'>) => void;
+  updateTriggeredAlert: (alertId: string, updates: Partial<TriggeredAlert>) => void;
+  markAlertStatus: (alertId: string, status: TriggeredAlert['status']) => void;
 }
 
 export type OpinionStore = OpinionState & OpinionActions;
@@ -122,7 +134,9 @@ export const useOpinionStore = create<OpinionStore>((set) => ({
   sentimentTrend: initialSentimentTrend,
   actions: persistedActions,
   alertRules: persistedAlertRules,
+  triggeredAlerts: persistedTriggeredAlerts,
   isMorningView: false,
+  actionsView: "kanban",
 
   setBrandConfig: (config) =>
     set((state) => {
@@ -164,6 +178,9 @@ export const useOpinionStore = create<OpinionStore>((set) => ({
   toggleMorningView: () =>
     set((state) => ({ isMorningView: !state.isMorningView })),
 
+  setActionsView: (view) =>
+    set(() => ({ actionsView: view })),
+
   setAlertRules: (rules) =>
     set(() => {
       safeSetStorage(STORAGE_KEYS.ALERT_RULES, rules);
@@ -186,5 +203,35 @@ export const useOpinionStore = create<OpinionStore>((set) => ({
       );
       safeSetStorage(STORAGE_KEYS.ALERT_RULES, newRules);
       return { alertRules: newRules };
+    }),
+
+  triggerAlert: (alert) =>
+    set((state) => {
+      const newAlert: TriggeredAlert = {
+        ...alert,
+        id: `alert_triggered_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        triggeredAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      };
+      const newAlerts = [newAlert, ...state.triggeredAlerts];
+      safeSetStorage(STORAGE_KEYS.TRIGGERED_ALERTS, newAlerts);
+      return { triggeredAlerts: newAlerts };
+    }),
+
+  updateTriggeredAlert: (alertId, updates) =>
+    set((state) => {
+      const newAlerts = state.triggeredAlerts.map((alert) =>
+        alert.id === alertId ? { ...alert, ...updates } : alert
+      );
+      safeSetStorage(STORAGE_KEYS.TRIGGERED_ALERTS, newAlerts);
+      return { triggeredAlerts: newAlerts };
+    }),
+
+  markAlertStatus: (alertId, status) =>
+    set((state) => {
+      const newAlerts = state.triggeredAlerts.map((alert) =>
+        alert.id === alertId ? { ...alert, status } : alert
+      );
+      safeSetStorage(STORAGE_KEYS.TRIGGERED_ALERTS, newAlerts);
+      return { triggeredAlerts: newAlerts };
     }),
 }));
