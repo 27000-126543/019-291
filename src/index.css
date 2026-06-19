@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: "Noto Sans SC", Inter, system-ui, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #060e18;
+  color: #e6ecf5;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 22, 40, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 139, 197, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 139, 197, 0.5);
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-navy-800/60 backdrop-blur-sm border border-navy-700/50 rounded-lg;
+  }
+
+  .glow-text-blue {
+    text-shadow: 0 0 20px rgba(24, 144, 255, 0.6);
+  }
+
+  .glow-text-red {
+    text-shadow: 0 0 20px rgba(255, 77, 79, 0.6);
+  }
+
+  .glow-text-orange {
+    text-shadow: 0 0 20px rgba(250, 140, 22, 0.6);
+  }
+
+  .glow-text-green {
+    text-shadow: 0 0 20px rgba(82, 196, 26, 0.6);
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-md text-navy-100/70 transition-all duration-200 hover:text-white hover:bg-navy-700/40;
+  }
+
+  .nav-link-active {
+    @apply bg-navy-700/60 text-white border-l-2 border-alert-blue;
+  }
+
+  .stat-number {
+    @apply font-serif font-bold tabular-nums;
+  }
+}
