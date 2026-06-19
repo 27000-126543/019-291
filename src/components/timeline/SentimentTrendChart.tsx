@@ -20,26 +20,36 @@ import { cn } from "@/lib/utils";
 const RESPONSE_TIME_POINT = "06-18 18:00";
 
 function getResponseEffectInfo(changePercent: number) {
-  const absChange = Math.abs(changePercent);
-  if (absChange >= 20) {
-    return {
-      text: "回应效果显著",
-      color: "#52C41A",
-      bgColor: "rgba(82, 196, 26, 0.15)",
-      borderColor: "rgba(82, 196, 26, 0.3)",
-      icon: "🟢",
-    };
-  } else if (absChange >= 10) {
-    return {
-      text: "回应有一定效果",
-      color: "#FA8C16",
-      bgColor: "rgba(250, 140, 22, 0.15)",
-      borderColor: "rgba(250, 140, 22, 0.3)",
-      icon: "🟡",
-    };
+  if (changePercent < 0) {
+    const drop = Math.abs(changePercent);
+    if (drop >= 20) {
+      return {
+        text: "回应效果显著",
+        color: "#52C41A",
+        bgColor: "rgba(82, 196, 26, 0.15)",
+        borderColor: "rgba(82, 196, 26, 0.3)",
+        icon: "🟢",
+      };
+    } else if (drop >= 10) {
+      return {
+        text: "回应有一定效果",
+        color: "#FA8C16",
+        bgColor: "rgba(250, 140, 22, 0.15)",
+        borderColor: "rgba(250, 140, 22, 0.3)",
+        icon: "🟡",
+      };
+    } else {
+      return {
+        text: "回应效果有限",
+        color: "#FA8C16",
+        bgColor: "rgba(250, 140, 22, 0.15)",
+        borderColor: "rgba(250, 140, 22, 0.3)",
+        icon: "🟠",
+      };
+    }
   } else {
     return {
-      text: "回应效果待观察",
+      text: changePercent > 0 ? "负面尚未压住，占比仍在上升" : "负面尚未压住",
       color: "#FF4D4F",
       bgColor: "rgba(255, 77, 79, 0.15)",
       borderColor: "rgba(255, 77, 79, 0.3)",
@@ -236,10 +246,13 @@ export default function SentimentTrendChart() {
           <div className="flex items-baseline gap-1 mb-1.5">
             <span
               className="text-2xl font-bold tabular-nums"
-              style={{ color: effectInfo.color }}
+              style={{ color: metrics.changePercent < 0 ? "#52C41A" : metrics.changePercent > 0 ? "#FF4D4F" : effectInfo.color }}
             >
-              {metrics.changePercent > 0 ? "↑" : "↓"}
-              {Math.abs(metrics.changePercent).toFixed(1)}%
+              {metrics.changePercent < 0
+                ? `↓${Math.abs(metrics.changePercent).toFixed(1)}%`
+                : metrics.changePercent > 0
+                  ? `↑${Math.abs(metrics.changePercent).toFixed(1)}%`
+                  : "持平"}
             </span>
           </div>
           <div

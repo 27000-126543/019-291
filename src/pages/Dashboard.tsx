@@ -2,6 +2,7 @@ import { useOpinionStore } from "@/store/useOpinionStore";
 import { motion } from "framer-motion";
 import type { Category } from "@/types";
 import BrandConfigPanel from "@/components/dashboard/BrandConfigPanel";
+import AlertRulePanel from "@/components/dashboard/AlertRulePanel";
 import StatCard from "@/components/dashboard/StatCard";
 import SentimentRing from "@/components/dashboard/SentimentRing";
 import PlatformChart from "@/components/dashboard/PlatformChart";
@@ -47,6 +48,8 @@ export default function Dashboard() {
       </motion.div>
 
       <BrandConfigPanel />
+
+      <AlertRulePanel />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard

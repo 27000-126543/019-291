@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Users } from "lucide-react";
 import type { ActionRecord } from "@/types";
 import { cn } from "@/lib/utils";
+import MorningSummaryPanel from "./MorningSummaryPanel";
 
 interface MorningMeetingViewProps {
   actions: ActionRecord[];
@@ -148,6 +149,9 @@ export default function MorningMeetingView({ actions, onEdit }: MorningMeetingVi
           })}
         </div>
       )}
+
+      <div className="my-8 border-t border-navy-600/40" />
+      <MorningSummaryPanel />
     </div>
   );
 }

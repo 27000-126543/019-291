@@ -79,6 +79,16 @@ export interface ActionRecord {
   updates: ActionUpdate[];
 }
 
+export interface AlertRule {
+  id: string;
+  name: string;
+  type: 'negative_ratio' | 'platform_spike' | 'competitor_trending';
+  enabled: boolean;
+  threshold: number;
+  unit: string;
+  description: string;
+}
+
 export interface StatItem {
   title: string;
   value: string | number;
