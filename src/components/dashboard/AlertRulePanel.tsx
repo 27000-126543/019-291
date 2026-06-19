@@ -62,23 +62,23 @@ function computeAlerts(
     }
 
     if (rule.type === "platform_spike") {
-      const platformCounts: Record<string, number> = {};
-      const platformOpinions: Record<string, string[]> = {};
+      const platformHeat: Record<string, number> = {};
+      const platformOpinionIds: Record<string, string[]> = {};
       for (const op of opinions) {
-        platformCounts[op.platform] = (platformCounts[op.platform] || 0) + 1;
-        if (!platformOpinions[op.platform]) {
-          platformOpinions[op.platform] = [];
+        platformHeat[op.platform] = (platformHeat[op.platform] || 0) + op.heat;
+        if (!platformOpinionIds[op.platform]) {
+          platformOpinionIds[op.platform] = [];
         }
-        platformOpinions[op.platform].push(op.id);
+        platformOpinionIds[op.platform].push(op.id);
       }
-      for (const [platform, count] of Object.entries(platformCounts)) {
-        if (count > rule.threshold) {
+      for (const [platform, totalHeat] of Object.entries(platformHeat)) {
+        if (totalHeat > rule.threshold) {
           triggered.push({
             rule,
-            value: count,
-            detail: `${PLATFORM_LABELS[platform] || platform} 声量 ${count} 条`,
+            value: totalHeat,
+            detail: `${PLATFORM_LABELS[platform] || platform} 声量 ${totalHeat.toLocaleString()}（热度值）`,
             involvedPlatforms: [platform],
-            involvedOpinionIds: platformOpinions[platform].slice(0, 8),
+            involvedOpinionIds: platformOpinionIds[platform],
           });
           break;
         }

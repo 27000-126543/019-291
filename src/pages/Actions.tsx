@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Plus, Sun, LayoutGrid, Users } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Sun, LayoutGrid, Users, BellRing } from "lucide-react";
 import { useOpinionStore } from "@/store/useOpinionStore";
 import type { ActionRecord } from "@/types";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import RiskColumn from "@/components/actions/RiskColumn";
 import MorningMeetingView from "@/components/actions/MorningMeetingView";
 import CrossDeptView from "@/components/actions/CrossDeptView";
 import ActionForm from "@/components/actions/ActionForm";
+import UrgePanel from "@/components/actions/UrgePanel";
 
 type ActionsViewMode = "kanban" | "morning" | "cross";
 
@@ -26,6 +27,7 @@ export default function Actions() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<ActionRecord | null>(null);
+  const [urgePanelOpen, setUrgePanelOpen] = useState(false);
 
   const viewMode: ActionsViewMode = actionsView === "cross" ? "cross" : isMorningView ? "morning" : "kanban";
 
@@ -152,6 +154,14 @@ export default function Actions() {
           ) : null}
 
           <button
+            onClick={() => setUrgePanelOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-navy-700/40 hover:bg-navy-600/60 text-navy-100 font-medium text-sm transition-all border border-navy-600/50 hover:border-navy-500/60"
+          >
+            <BellRing className="w-4 h-4" />
+            <span>协同催办</span>
+          </button>
+
+          <button
             onClick={handleAdd}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-alert-blue hover:bg-alert-blue/90 text-white font-medium text-sm transition-colors shadow-glow"
           >
@@ -205,6 +215,15 @@ export default function Actions() {
         onSubmit={handleSubmit}
         onAddUpdate={handleAddUpdate}
       />
+
+      <AnimatePresence>
+        {urgePanelOpen && (
+          <UrgePanel
+            actions={actions}
+            onClose={() => setUrgePanelOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -36,6 +36,7 @@ interface EvidenceDetailModalProps {
     phase: string;
     opinionId?: string;
     relatedOpinionIds?: string[];
+    nodeId?: string;
   } | null;
 }
 
@@ -182,10 +183,26 @@ export default function EvidenceDetailModal({ open, onClose, evidence }: Evidenc
       });
     }
 
-    return actions.filter((action) =>
-      action.relatedOpinionIds.some((id) => targetIds.has(id))
-    );
-  }, [evidence, actions, opinions]);
+    if (evidence.nodeId) {
+      const node = timelineNodes.find((n) => n.id === evidence.nodeId);
+      if (node) {
+        node.opinionIds.forEach((id) => targetIds.add(id));
+      }
+    }
+
+    const actionIds = new Set<string>();
+    const result: ActionRecord[] = [];
+
+    actions.forEach((action) => {
+      const hasMatch = action.relatedOpinionIds.some((id) => targetIds.has(id));
+      if (hasMatch && !actionIds.has(action.id)) {
+        actionIds.add(action.id);
+        result.push(action);
+      }
+    });
+
+    return result;
+  }, [evidence, actions, opinions, timelineNodes]);
 
   const PhaseIcon = phaseConfig.icon;
 

@@ -39,9 +39,9 @@ const defaultAlertRules: AlertRule[] = [
     name: '单平台声量预警',
     type: 'platform_spike',
     enabled: true,
-    threshold: 5000,
-    unit: '条',
-    description: '单平台24h声量超过5000',
+    threshold: 50000,
+    unit: '热度',
+    description: '单平台24小时热度值超过阈值时触发',
   },
   {
     id: 'alert_competitor_trending',

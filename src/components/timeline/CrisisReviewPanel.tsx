@@ -40,6 +40,7 @@ interface EvidenceItem {
   phase: string;
   opinionId?: string;
   relatedOpinionIds?: string[];
+  nodeId?: string;
 }
 
 interface ActionItem {
@@ -266,6 +267,7 @@ export default function CrisisReviewPanel() {
                     heat: step.heat,
                     phase: phase.key,
                     platform: step.platform,
+                    nodeId: node.id,
                   });
                 }
               });
@@ -304,6 +306,7 @@ export default function CrisisReviewPanel() {
                     heat: step.heat,
                     phase: phase.key,
                     platform: step.platform,
+                    nodeId: node.id,
                   });
                 }
               });
@@ -324,6 +327,7 @@ export default function CrisisReviewPanel() {
                   heat: step.heat,
                   phase: phase.key,
                   platform: step.platform,
+                  nodeId: node.id,
                 });
               }
             });
